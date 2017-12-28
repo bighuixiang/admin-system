@@ -29,7 +29,7 @@ module.exports = {
         assetsPublicPath: '/',
         proxyTable: {
             '/v3':{
-                target: 'https://wx.nullexcept.com',
+                target: 'https://ad.nullexcept.com',
                 changeOrigin: true,
                 pathRewrite: {
                     '^/v3': '/v3',

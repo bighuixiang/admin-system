@@ -17,10 +17,16 @@ Vue.filter('dateFormat', dateFormat);
 router.beforeEach((to, from, next) => {
 	//路由请求前做些什么
 	let timeout = localStorage.getItem('timeout', new Date().getTime());
+	var curTime = new Date().getTime();
 	if(to.path == "/login") {
-		next();
+		if(timeout && (curTime - timeout) <= 1000 * 60 * 10) {
+			console.log("页面没超时  不用重新登录")
+			localStorage.setItem('timeout', new Date().getTime());
+			router.push('/basetable');
+		} else {
+			next();
+		}
 	} else {
-		var curTime = new Date().getTime();
 		console.log(timeout)
 		if(timeout && (curTime - timeout) <= 1000 * 60 * 10) {
 			console.log("页面没超时  不用重新登录")

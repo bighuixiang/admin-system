@@ -94,7 +94,7 @@
 					label: '所有中奖用户'
 				}, {
 					value: 0,
-					label: '所有未中奖用户'
+					label: '所有未中奖和未抽奖用户'
 				}, {
 					value: 1,
 					label: '勇于探索奖'
@@ -103,10 +103,10 @@
 					label: '勇于实践奖'
 				}, {
 					value: 3,
-					label: '获得开拓创新奖'
+					label: '开拓创新奖'
 				}, {
 					value: 4,
-					label: '获得眼光独到奖'
+					label: '眼光独到奖'
 				}],
 			}
 		},
@@ -126,15 +126,15 @@
 			getData() {
 				let self = this;
 				let sTime = '';
-			    let eTime = '';
-			    
-			    if(self.start){
-			    	sTime = new Date(self.start).getTime()/1000;
-			    }
-			     if(self.end){
-			    	eTime = new Date(self.end).getTime()/1000;
-			    }
-			     
+				let eTime = '';
+
+				if(self.start) {
+					sTime = new Date(self.start).getTime() / 1000;
+				}
+				if(self.end) {
+					eTime = new Date(self.end).getTime() / 1000;
+				}
+
 				let postUrl = "v3/em?action=query_draw&page=" + (self.cur_page - 1) + "&num=" + self.pageSize + "&start=" + sTime + "&end=" + eTime + "&phone=" + self.phone + "&draw=" + self.draw;
 				self.$axios
 					.post(postUrl, {})
@@ -145,9 +145,45 @@
 							self.tableData = response.data.data;
 							if(self.tableData && self.tableData.length > 0) {
 								self.tableData.forEach(item => {
-									item.name = decodeURI(item.name);
-									item.nickname = decodeURI(item.nickname);
-									item.draw = self.getType(parseInt(item.draw));
+									if(item.draw_time > 0) {
+										item.draw = self.getType(parseInt(item.draw))
+									} else {
+										item.draw = "未抽奖"
+									}
+
+									item.name = item.name.replace(/%(?![0-9a-fA-F]{2})/g, "%25");
+									item.nickname = item.nickname.replace(/%(?![0-9a-fA-F]{2})/g, "%25");
+									try {
+										item.name = decodeURIComponent(item.name);
+									} catch(e) {
+										console.log("name转换失败");
+										try {
+											item.name = decodeURI(item.name);
+										} catch(e1) {
+											console.log("namedecodeURIComponent转换失败");
+											try {
+												item.name = unescape(item.name);
+											} catch(e2) {
+												console.log("nameunescape转换失败");
+											}
+										}
+									}
+									try {
+										item.nickname = decodeURIComponent(item.nickname);
+									} catch(e) {
+										console.log("nickname转换失败");
+										try {
+											item.nickname = decodeURI(item.nickname);
+										} catch(e1) {
+											console.log("nicknamedecodeURIComponent转换失败");
+											try {
+												item.nickname = unescape(item.nickname);
+											} catch(e2) {
+												console.log("nicknameunescape转换失败");
+											}
+										}
+									}
+
 								})
 							}
 						}
@@ -180,6 +216,7 @@
 				return str;
 			},
 			search() {
+				this.cur_page = 1;
 				this.getData();
 			}
 		}
